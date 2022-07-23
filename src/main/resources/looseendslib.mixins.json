@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.totobirdcreations.looseendslib.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "PlayerManagerMixin",
+    "serverlist.MinecraftServerMixin",
+    "serverlist.ServerMetadataDeserializerMixin",
+    "serverlist.ServerMetadataMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

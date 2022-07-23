@@ -1,29 +1,29 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "looseendslib",
   "version": "${version}",
 
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "Loose Ends Lib",
+  "description": "A library that controls how servers and clients will act when joining without the mod.",
   "authors": [
-    "Me!"
+    "Totobird Creations"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/Totobird-Creations",
+    "sources": "https://github.com/Totobird-Creations/LooseEndsLib"
   },
 
-  "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
+  "license": "MIT",
+  "icon": "assets/looseendslib/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "net.totobirdcreations.looseendslib.LooseEndsLib"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "looseendslib.mixins.json"
   ],
 
   "depends": {
