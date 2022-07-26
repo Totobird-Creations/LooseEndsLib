@@ -4,8 +4,9 @@ import com.google.gson.*;
 import net.minecraft.server.ServerMetadata;
 import net.minecraft.text.Text;
 import net.minecraft.util.JsonHelper;
-import net.totobirdcreations.looseendslib.LooseEnd;
-import net.totobirdcreations.looseendslib.LooseEndManager;
+import net.totobirdcreations.looseendslib.LooseEndsLib;
+import net.totobirdcreations.looseendslib.manager.LooseEnd;
+import net.totobirdcreations.looseendslib.manager.LooseEndManager;
 import net.totobirdcreations.looseendslib.util.LooseEndLang;
 import net.totobirdcreations.looseendslib.util.mixin.serverlist.ServerMetadataMixinInterface;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,38 +26,30 @@ abstract class ServerMetadataDeserializerMixin implements JsonDeserializer<Serve
             method = "deserialize(Lcom/google/gson/JsonElement;Ljava/lang/reflect/Type;Lcom/google/gson/JsonDeserializationContext;)Lnet/minecraft/server/ServerMetadata;",
             at = @At("RETURN")
     )
-    public void deserialize(JsonElement element, Type type, JsonDeserializationContext context, CallbackInfoReturnable<ServerMetadata> callback) {
+    void deserialize(JsonElement element, Type type, JsonDeserializationContext context, CallbackInfoReturnable<ServerMetadata> callback) {
         ServerMetadata               metadata  = callback.getReturnValue();
         JsonObject                   json      = JsonHelper.asObject(element, "status");
-        ServerMetadataMixinInterface imetadata = (ServerMetadataMixinInterface) metadata;
+        ServerMetadataMixinInterface iMetadata = (ServerMetadataMixinInterface) metadata;
         if (json.has("looseEndsLibRealDescription")) {
             ArrayList<LooseEnd> ends = new ArrayList<>();
             int i = 0;
             while (true) {
                 if (
-                        json.has("looseEndsLibEndList." + i + ".modId"      ) &&
-                        json.has("looseEndsLibEndList." + i + ".modName"    ) &&
-                        json.has("looseEndsLibEndList." + i + ".modVersion" )
+                        json.has("looseEndsLibEndList." + i)
                 ) {
-                    LooseEnd end = new LooseEnd(
-                            JsonHelper.getString(json, "looseEndsLibEndList." + i + ".modId"      ),
-                            JsonHelper.getString(json, "looseEndsLibEndList." + i + ".modName"    ),
-                            JsonHelper.getString(json, "looseEndsLibEndList." + i + ".modVersion" )
-                    )
-                            .whenJoinServer(LooseEnd.Condition.fromString(
-                                    JsonHelper.getString(json, "looseEndsLibEndList." + i + ".whenJoinServer")
-                            ))
-                            .whenClientJoins(LooseEnd.Condition.fromString(
-                                    JsonHelper.getString(json, "looseEndsLibEndList." + i + ".whenClientJoins")
-                            ));
-                    ends.add(end);
+                    LooseEnd end = LooseEnd.fromSendableString(
+                            JsonHelper.getString(json, "looseEndsLibEndList." + i)
+                    );
+                    if (end != null) {
+                        ends.add(end);
+                    }
                 } else {
                     break;
                 }
                 i += 1;
             }
-            imetadata.setEnds(ends);
-            if (LooseEndManager.getInstance().confirmActive(ends)) {
+            iMetadata.setEnds(ends);
+            if (! LooseEndManager.getInstance().getErrors(LooseEndManager.getInstance().getEnds(), ends).hasAny()) {
                 metadata.setDescription(context.deserialize(json.get("looseEndsLibRealDescription"), Text.class));
             }
         }
@@ -67,36 +60,19 @@ abstract class ServerMetadataDeserializerMixin implements JsonDeserializer<Serve
             method = "serialize(Lnet/minecraft/server/ServerMetadata;Ljava/lang/reflect/Type;Lcom/google/gson/JsonSerializationContext;)Lcom/google/gson/JsonElement;",
             at = @At("RETURN")
     )
-    public void serialize(ServerMetadata metadata, Type type, JsonSerializationContext context, CallbackInfoReturnable<JsonElement> callback) {
+    void serialize(ServerMetadata metadata, Type type, JsonSerializationContext context, CallbackInfoReturnable<JsonElement> callback) {
         JsonObject                   json      = (JsonObject)(callback.getReturnValue());
-        ServerMetadataMixinInterface imetadata = (ServerMetadataMixinInterface) metadata;
+        ServerMetadataMixinInterface iMetadata = (ServerMetadataMixinInterface) metadata;
 
-        if (imetadata.getRealDescription() != null) {
-            json.add("looseEndsLibRealDescription", context.serialize(imetadata.getRealDescription()));
-        }
-        ArrayList<LooseEnd> ends = imetadata.getEnds();
-        for (int i = 0; i < ends.size(); i++) {
-            LooseEnd end = ends.get(i);
-            String prefix = "looseEndsLibEndList." + i + ".";
-            json.addProperty(prefix + "modId"           , end.modId);
-            json.addProperty(prefix + "modName"         , end.modName);
-            json.addProperty(prefix + "modVersion"      , end.modVersion);
-            json.addProperty(prefix + "whenJoinServer"  , end.getWhenJoinServer().toString()  );
-            json.addProperty(prefix + "whenClientJoins" , end.getWhenClientJoins().toString() );
+        if (iMetadata.getRealDescription() != null) {
+            json.add("looseEndsLibRealDescription", context.serialize(iMetadata.getRealDescription()));
+            ArrayList<LooseEnd> ends = iMetadata.getEnds();
+            for (int i = 0; i < ends.size(); i++) {
+                LooseEnd end = ends.get(i);
+                json.addProperty("looseEndsLibEndList." + i, end.toSendableString());
+            }
         }
 
-    }
-
-
-    @Redirect(
-            method = "serialize(Lnet/minecraft/server/ServerMetadata;Ljava/lang/reflect/Type;Lcom/google/gson/JsonSerializationContext;)Lcom/google/gson/JsonElement;",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/server/ServerMetadata;getDescription()Lnet/minecraft/text/Text;"
-            )
-    )
-    public Text serializeGetDescription(ServerMetadata metadata) {
-        return LooseEndLang.getServerListFailText();
     }
 
 }

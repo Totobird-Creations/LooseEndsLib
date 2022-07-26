@@ -2,7 +2,7 @@ package net.totobirdcreations.looseendslib.mixin.serverlist;
 
 import net.minecraft.server.ServerMetadata;
 import net.minecraft.text.Text;
-import net.totobirdcreations.looseendslib.LooseEnd;
+import net.totobirdcreations.looseendslib.manager.LooseEnd;
 import net.totobirdcreations.looseendslib.util.mixin.serverlist.ServerMetadataMixinInterface;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,12 +10,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import java.util.ArrayList;
 
 
+@SuppressWarnings("unused")
 @Mixin(ServerMetadata.class)
 class ServerMetadataMixin implements ServerMetadataMixinInterface {
 
     @Nullable
     private Text                realDescription;
     private ArrayList<LooseEnd> ends            = new ArrayList<>();
+
 
     @Nullable
     @Override
@@ -24,7 +26,7 @@ class ServerMetadataMixin implements ServerMetadataMixinInterface {
     }
 
     @Override
-    public void setRealDescription(Text value) {
+    public void setRealDescription(@Nullable Text value) {
         this.realDescription = value;
     }
 

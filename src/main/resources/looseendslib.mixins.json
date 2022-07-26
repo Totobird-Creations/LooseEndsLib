@@ -4,14 +4,16 @@
   "package": "net.totobirdcreations.looseendslib.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "PlayerManagerMixin",
+    "handler.ServerWorldMixin",
     "serverlist.MinecraftServerMixin",
     "serverlist.ServerMetadataDeserializerMixin",
-    "serverlist.ServerMetadataMixin"
-  ],
-  "client": [
+    "serverlist.ServerMetadataMixin",
+    "serverproperties.ServerPropertiesHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "client": [
+    "handler.ClientWorldMixin"
+  ]
 }

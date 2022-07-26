@@ -1,7 +1,7 @@
 package net.totobirdcreations.looseendslib.util.mixin.serverlist;
 
 import net.minecraft.text.Text;
-import net.totobirdcreations.looseendslib.LooseEnd;
+import net.totobirdcreations.looseendslib.manager.LooseEnd;
 
 import java.util.ArrayList;
 
