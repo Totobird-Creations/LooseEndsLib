@@ -21,8 +21,6 @@ public class LooseEndsLib implements ModInitializer {
 	public void onInitialize() {
 		ENVIRONMENT    = FabricLoader.getInstance().getEnvironmentType();
 		IS_DEVELOPMENT = FabricLoader.getInstance().isDevelopmentEnvironment();
-
-		LooseEndsExample.enable();
 	}
 
 }
