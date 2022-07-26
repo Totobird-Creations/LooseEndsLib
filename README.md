@@ -17,3 +17,15 @@ Add the following to your `gradle.properties`.
 ```properties
 looseendslib_version = v1.0.0-mc1.19
 ```
+
+__Usage__:
+In your initialiser's `onInitialize` method, add the following:
+```java
+LooseEndManager.getInstance().register(mod_id, mod_name, mod_version)
+    .whenClientJoins(condition)
+    .whenJoinServer(condition).
+```
+Conditions:
+- `LooseEnd.Condition.REQUIRED` : The peer must also have the mod.
+- `LooseEnd.Condition.NONE` : Nothing happens.
+- `LooseEnd.Condition.DISALLOWED` : The peer can not have the mod.
