@@ -30,8 +30,8 @@ abstract class ServerMetadataDeserializerMixin implements JsonDeserializer<Serve
         ServerMetadata               metadata  = callback.getReturnValue();
         JsonObject                   json      = JsonHelper.asObject(element, "status");
         ServerMetadataMixinInterface iMetadata = (ServerMetadataMixinInterface) metadata;
+        ArrayList<LooseEnd> ends = new ArrayList<>();
         if (json.has("looseEndsLibRealDescription")) {
-            ArrayList<LooseEnd> ends = new ArrayList<>();
             int i = 0;
             while (true) {
                 if (
@@ -48,10 +48,12 @@ abstract class ServerMetadataDeserializerMixin implements JsonDeserializer<Serve
                 }
                 i += 1;
             }
-            iMetadata.setEnds(ends);
-            if (! LooseEndManager.getInstance().getErrors(LooseEndManager.getInstance().getEnds(), ends).hasAny()) {
-                metadata.setDescription(context.deserialize(json.get("looseEndsLibRealDescription"), Text.class));
-            }
+        }
+        iMetadata.setEnds(ends);
+        if (! LooseEndManager.getInstance().getErrors(LooseEndManager.getInstance().getEnds(), ends).hasAny()) {
+            metadata.setDescription(context.deserialize(json.get("looseEndsLibRealDescription"), Text.class));
+        } else {
+            metadata.setDescription(LooseEndLang.getServerList());
         }
     }
 
@@ -66,11 +68,11 @@ abstract class ServerMetadataDeserializerMixin implements JsonDeserializer<Serve
 
         if (iMetadata.getRealDescription() != null) {
             json.add("looseEndsLibRealDescription", context.serialize(iMetadata.getRealDescription()));
-            ArrayList<LooseEnd> ends = iMetadata.getEnds();
-            for (int i = 0; i < ends.size(); i++) {
-                LooseEnd end = ends.get(i);
-                json.addProperty("looseEndsLibEndList." + i, end.toSendableString());
-            }
+        }
+        ArrayList<LooseEnd> ends = iMetadata.getEnds();
+        for (int i = 0; i < ends.size(); i++) {
+            LooseEnd end = ends.get(i);
+            json.addProperty("looseEndsLibEndList." + i, end.toSendableString());
         }
 
     }
