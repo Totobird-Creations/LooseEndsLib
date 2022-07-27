@@ -15,7 +15,7 @@ dependencies {
 ```
 Add the following to your `gradle.properties`.
 ```properties
-looseendslib_version = v1.0.0-mc1.19
+looseendslib_version = v1.0.1-mc1.19
 ```
 
 __Usage__:
