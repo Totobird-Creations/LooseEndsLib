@@ -23,7 +23,7 @@ In your initialiser's `onInitialize` method, add the following:
 ```java
 LooseEndManager.getInstance().register(mod_id, mod_name, mod_version)
     .whenClientJoins(condition)
-    .whenJoinServer(condition).
+    .whenJoinServer(condition);
 ```
 Conditions:
 - `LooseEnd.Condition.REQUIRED` : The peer must also have the mod.
