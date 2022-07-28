@@ -18,7 +18,6 @@ import net.minecraft.text.Text;
 import net.totobirdcreations.looseendslib.LooseEndsLib;
 import net.totobirdcreations.looseendslib.util.LooseEndLang;
 
-import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
@@ -27,11 +26,6 @@ import java.util.ArrayList;
 public class ClientLooseEndManager {
 
     private final LooseEndManager owner;
-
-    @Nullable
-    private ClientPlayNetworkHandler handler;
-    @Nullable
-    private MinecraftClient          client;
 
 
     private ArrayList<LooseEnd> remoteEnds;
@@ -46,9 +40,7 @@ public class ClientLooseEndManager {
 
     /* package-private */ void start(ClientPlayNetworkHandler handler, PacketSender ignoredSender, MinecraftClient client) {
         this.reset();
-        this.handler = handler;
-        this.client  = client;
-        if (! this.shouldRun()) {return;}
+        if (! this.shouldRun(client)) {return;}
 
         LooseEndManager manager = LooseEndManager.getInstance();
 
@@ -61,29 +53,27 @@ public class ClientLooseEndManager {
     }
 
 
-    public void tick() {
-        if (! this.shouldRun()) {return;}
+    public void tick(MinecraftClient client) {
+        if (! this.shouldRun(client)) {return;}
 
         if (this.ticksPassed < LooseEndsLib.TIMEOUT) {
             this.ticksPassed += 1;
             if (this.ticksPassed == LooseEndsLib.TIMEOUT) {
-                this.verify();
+                this.verify(client);
             }
         }
     }
 
 
-    private void verify() {
-        if (! this.shouldRun()) {return;}
+    private void verify(MinecraftClient client) {
+        if (! this.shouldRun(client)) {return;}
 
         LooseEndManager manager = LooseEndManager.getInstance();
         LooseEndManager.Errors errors = manager.getErrors(manager.getEnds(), this.remoteEnds);
 
         if (errors.hasAny()) {
             Text error = errors.generateError(LooseEndLang.getClientSuffix());
-            assert this.client != null;
-            this.client.execute(() -> {
-                MinecraftClient client = this.client;
+            client.execute(() -> {
                 if (client.world != null) {
                     client.world.disconnect();
                 }
@@ -102,8 +92,8 @@ public class ClientLooseEndManager {
     }
 
 
-    /* package-private */ void signal(MinecraftClient ignoredClient, ClientPlayNetworkHandler ignoredHandler, PacketByteBuf buf, PacketSender ignoredSender) {
-        if (! this.shouldRun()) {return;}
+    /* package-private */ void signal(MinecraftClient client, ClientPlayNetworkHandler ignoredHandler, PacketByteBuf buf, PacketSender ignoredSender) {
+        if (! this.shouldRun(client)) {return;}
 
         StringBuilder data = new StringBuilder();
         while (buf.isReadable()) {
@@ -114,17 +104,13 @@ public class ClientLooseEndManager {
     }
 
 
-    private boolean shouldRun() {
-        assert this.client != null;
-        MinecraftServer server = this.client.getServer();
+    private boolean shouldRun(MinecraftClient client) {
+        MinecraftServer server = client.getServer();
         return server == null || ! server.isSingleplayer();
     }
 
 
     private void reset() {
-        this.handler = null;
-        this.client  = null;
-
         this.remoteEnds  = new ArrayList<>();
         this.ticksPassed = 0;
     }

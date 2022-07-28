@@ -4,7 +4,6 @@ import io.netty.util.AsciiString;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
@@ -26,8 +25,6 @@ import java.util.ArrayList;
 
     @Nullable
     private ServerPlayNetworkHandler handler;
-    @Nullable
-    private MinecraftServer          server;
 
     private ArrayList<LooseEnd> remoteEnds;
     private int                 ticksPassed;
@@ -42,8 +39,7 @@ import java.util.ArrayList;
     /* package-private */ void start(ServerPlayNetworkHandler handler, PacketSender ignoredSender, MinecraftServer server) {
         this.reset();
         this.handler = handler;
-        this.server  = server;
-        if (! this.shouldRun()) {return;}
+        if (! this.shouldRun(server, handler)) {return;}
 
         LooseEndManager manager = LooseEndManager.getInstance();
 
@@ -56,31 +52,29 @@ import java.util.ArrayList;
     }
 
 
-    public void tick() {
-        if (! this.shouldRun()) {return;}
+    public void tick(MinecraftServer server) {
+        if (! this.shouldRun(server, this.handler)) {return;}
 
         if (this.ticksPassed < LooseEndsLib.TIMEOUT) {
             this.ticksPassed += 1;
             if (this.ticksPassed == LooseEndsLib.TIMEOUT) {
-                this.verify();
+                this.verify(server, this.handler);
             }
         }
     }
 
 
-    private void verify() {
-        if (! this.shouldRun()) {return;}
+    private void verify(MinecraftServer server, ServerPlayNetworkHandler handler) {
+        if (! this.shouldRun(server, handler)) {return;}
 
         LooseEndManager manager = LooseEndManager.getInstance();
         LooseEndManager.Errors errors = manager.getErrors(this.remoteEnds, manager.getEnds());
 
         if (errors.hasAny()) {
             Text error = errors.generateError(LooseEndLang.getServerSuffix());
-            assert this.server != null;
-            assert this.handler != null;
-            this.server.execute(() -> {
-                this.handler.connection.send(new DisconnectS2CPacket(error));
-                this.handler.disconnect(Text.literal("Unresolved mod list conflicts."));
+            server.execute(() -> {
+                handler.connection.send(new DisconnectS2CPacket(error));
+                handler.disconnect(Text.literal("Unresolved mod list conflicts."));
             });
         }
     }
@@ -89,8 +83,8 @@ import java.util.ArrayList;
     /* package-private */ void stop(ServerPlayNetworkHandler ignoredHandler, MinecraftServer ignoredServer) {}
 
 
-    /* package-private */ void signal(MinecraftServer ignoredServer, ServerPlayerEntity ignoredPlayer, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender ignoredSender) {
-        if (! this.shouldRun()) {return;}
+    /* package-private */ void signal(MinecraftServer server, ServerPlayerEntity ignoredPlayer, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender ignoredSender) {
+        if (! this.shouldRun(server, handler)) {return;}
 
         StringBuilder data = new StringBuilder();
         while (buf.isReadable()) {
@@ -101,18 +95,16 @@ import java.util.ArrayList;
     }
 
 
-    private boolean shouldRun() {
-        assert this.server != null;
+    private boolean shouldRun(MinecraftServer server, ServerPlayNetworkHandler handler) {
         return (
-                this.server.getHostProfile() == null ||
-                ! this.server.getHostProfile().equals(this.handler.getPlayer().getGameProfile())
+                server.getHostProfile() == null ||
+                ! server.getHostProfile().equals(handler.getPlayer().getGameProfile())
         );
     }
 
 
     private void reset() {
         this.handler = null;
-        this.server  = null;
 
         this.remoteEnds  = new ArrayList<>();
         this.ticksPassed = 0;

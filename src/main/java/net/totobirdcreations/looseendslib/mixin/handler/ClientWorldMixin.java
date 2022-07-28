@@ -18,7 +18,7 @@ class ClientWorldMixin {
             at = @At("TAIL")
     )
     void tick(BooleanSupplier supplier, CallbackInfo callback) {
-        LooseEndManager.getInstance().getClientManager().tick();
+        LooseEndManager.getInstance().getClientManager().tick(((ClientWorldInterface)this).getClient());
     }
 
 }

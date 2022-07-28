@@ -14,6 +14,8 @@
     "defaultRequire": 1
   },
   "client": [
-    "handler.ClientWorldMixin"
+    "handler.ClientWorldInterface",
+    "handler.ClientWorldMixin",
+    "handler.ServerWorldInterface"
   ]
 }

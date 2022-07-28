@@ -1,7 +1,6 @@
 package net.totobirdcreations.looseendslib.mixin.handler;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.server.world.ServerWorld;
 import net.totobirdcreations.looseendslib.manager.LooseEndManager;
 import net.totobirdcreations.looseendslib.manager.ServerLooseEndManager;
@@ -23,7 +22,7 @@ class ServerWorldMixin {
     void tick(BooleanSupplier supplier, CallbackInfo callback) {
         ImmutableList<ServerLooseEndManager> serverManagers = LooseEndManager.getInstance().getServerManagers();
         for (ServerLooseEndManager serverManager : serverManagers) {
-            serverManager.tick();
+            serverManager.tick(((ServerWorldInterface)this).getServer());
         }
     }
 
