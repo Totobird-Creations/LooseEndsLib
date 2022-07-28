@@ -8,14 +8,14 @@
     "serverlist.MinecraftServerMixin",
     "serverlist.ServerMetadataDeserializerMixin",
     "serverlist.ServerMetadataMixin",
-    "serverproperties.ServerPropertiesHandlerMixin"
+    "serverproperties.ServerPropertiesHandlerMixin",
+    "handler.ServerWorldInterface"
+  ],
+  "client": [
+    "handler.ClientWorldInterface",
+    "handler.ClientWorldMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "client": [
-    "handler.ClientWorldInterface",
-    "handler.ClientWorldMixin",
-    "handler.ServerWorldInterface"
-  ]
+  }
 }
